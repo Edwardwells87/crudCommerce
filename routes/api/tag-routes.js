@@ -1,23 +1,27 @@
 const router = require('express').Router();
-const { Tag, Product, ProductTag } = require('../../models');
+const sequelize = require('../../config/connection');
+const { Tag, Product, ProductTag, Tag, Tag } = require('../../models');
 
 // The `/api/tags` endpoint
 
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
   try{
-  const productData = await Product.findAll({
-    include: { 
-      product_name, 
-      price,
-      stock,
-      category_id,
+  const tagData = await Tag.findAll({
+    include: [{ model: Tag}, { model: Product}],
+    attributes: {
+      include: [[
+        sequelize.literal( //ask james to help with the literals because im not sure about 'associated data' 
+        )
+      ]
+
+      ]
     }
   });
 
  
-  return res.json(productData);
+  return res.json(tagData);
 } catch (error) {
-  console.error('Error retrieving products:', error);
+  console.error('Error retrieving tag data:', error);
   return res.status(500).json({ error: 'Failed to retrieve products' });
 }
 });
@@ -31,16 +35,13 @@ router.get('/:id', (req, res) => {
 });
 
 router.post('/', (req, res) => {
-  Product.create({
-    product_name: req.body.product_name,
-    price: req.body.price,
-    stock: req.body.stock,
-    category_id: req.body.category_id,
-  }) .then((newProduct) => {
-    console.log('New product created:', newProduct);
+  Tag.create({
+    tag_name: req.body.tag_name,
+  }) .then((newTag) => {
+    console.log('New tag Created:', newTag);
   })
   .catch((error) => {
-    console.error('Error creating product:', error);
+    console.error('Error creating tag:', error);
   });
 });
 
@@ -51,11 +52,11 @@ router.put('/:id', (req, res) => {
 router.delete('/:id', (req, res) => {
   Product.destroy({
     where: {
-      product_id: req.params.product_id,
+      tag_name: req.params.tag_name,
     },
   })
-  .then((deletedProduct) => {
-    res.json(deletedProduct)
+  .then((deletedTag) => {
+    res.json(deletedTag)
   })
   .catch((err)=> res.json(err));
 });

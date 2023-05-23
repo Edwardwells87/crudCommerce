@@ -1,35 +1,61 @@
 const router = require('express').Router();
 const sequelize = require('../../config/connection');
-const { Tag, Product, ProductTag, Tag, Tag } = require('../../models');
+const { Tag, Product, ProductTag } = require('../../models');
 
 // The `/api/tags` endpoint
 
 router.get('/', async (req, res) => {
-  try{
-  const tagData = await Tag.findAll({
-    include: [{ model: Tag}, { model: Product}],
-    attributes: {
-      include: [[
-        sequelize.literal( //ask james to help with the literals because im not sure about 'associated data' 
-        )
-      ]
-
-      ]
-    }
+  try {
+    const tagData = await Tag.findAll({
+      attributes: ["id", "tag_name"],
+      include: [
+        {
+          model: Product,
+          attributes: ["id", "product_name", "price", "stock", "category_id"],
+        },
+      ],
+    });
+    res.json(tagData);
+  } catch (err) {
+    console.log(err);
+    res.status(500).json(err);
+  }
   });
 
- 
-  return res.json(tagData);
-} catch (error) {
-  console.error('Error retrieving tag data:', error);
-  return res.status(500).json({ error: 'Failed to retrieve products' });
-}
-});
+
    // find all tags
   // be sure to include its associated Product data
 
 
-router.get('/:id', (req, res) => {
+router.get('/:id', async (req, res) => {
+  try {
+    const tagData = await Tag.findOne({
+      where: {
+        id: req.params.id
+      },
+      attributes: [
+        'id',
+        'tag_name'
+      ],
+      include: [
+        {
+          model: Product,
+          attributes: [
+            'id',
+            'product_name',
+            'price',
+            'stock',
+            'category_id'
+          ]
+        }
+      ]
+    });
+    res.json(tagData);
+  } catch (err) {
+    console.log(err);
+    res.status(500).json(err);
+  }
+
   // find a single tag by its `id`
   // be sure to include its associated Product data
 });

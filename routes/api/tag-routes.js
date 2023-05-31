@@ -6,7 +6,7 @@ const { Tag, Product, ProductTag } = require('../../models');
 
 router.get('/', async (req, res) => {
   try {
-    const tagData = await Tag.findAll({
+    const tagData = await ProductTag.findAll({
       attributes: ["id", "tag_name"],
       include: [
         {
@@ -27,38 +27,38 @@ router.get('/', async (req, res) => {
   // be sure to include its associated Product data
 
 
-router.get('/:id', async (req, res) => {
-  try {
-    const tagData = await Tag.findOne({
-      where: {
-        id: req.params.id
-      },
-      attributes: [
-        'id',
-        'tag_name'
-      ],
-      include: [
-        {
-          model: Product,
-          attributes: [
-            'id',
-            'product_name',
-            'price',
-            'stock',
-            'category_id'
-          ]
-        }
-      ]
-    });
-    res.json(tagData);
-  } catch (err) {
-    console.log(err);
-    res.status(500).json(err);
-  }
-
-  // find a single tag by its `id`
-  // be sure to include its associated Product data
-});
+  router.get('/:id', async (req, res) => {
+    try {
+      const tagData = await ProductTag.findOne({
+        where: {
+          id: req.params.id
+        },
+        include: [
+          {
+            model: Product,
+            attributes: [
+              'id',
+              'product_name',
+              'price',
+              'stock',
+              'category_id'
+            ]
+          }
+        ]
+      });
+  
+      if (!tagData) {
+        res.status(404).json({ message: 'Tag not found' });
+        return;
+      }
+  
+      res.json(tagData);
+    } catch (err) {
+      console.log(err);
+      res.status(500).json(err);
+    }
+  });
+ 
 
 router.post('/', (req, res) => {
   Tag.create({
@@ -71,20 +71,38 @@ router.post('/', (req, res) => {
   });
 });
 
-router.put('/:id', (req, res) => {
-  
+router.put('/:id', async (req, res) => {
+  try {
+    const tagData = await ProductTag.update(req.body, {
+      where: { id: req.params.id },
+      returning: true,
+    });
+
+    if (tagData[0] === 0) {
+      res.status(404).json({ message: 'Tag not found' });
+      return;
+    }
+
+    res.status(200).json(tagData[1]);
+  } catch (err) {
+    console.log(err);
+    res.status(500).json(err);
+  }
 });
 
 router.delete('/:id', (req, res) => {
-  Product.destroy({
+  ProductTag.destroy({
     where: {
-      tag_name: req.params.tag_name,
+      id: req.params.id,
     },
   })
   .then((deletedTag) => {
-    res.json(deletedTag)
+    res.json(deletedTag);
   })
-  .catch((err)=> res.json(err));
+  .catch((err) => {
+    console.log(err);
+    res.status(500).json(err);
+  });
 });
 
 module.exports = router;

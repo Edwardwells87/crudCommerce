@@ -20,6 +20,7 @@ router.get('/', async (req, res) => {
 
 router.get('/:id', async (req, res) => {
   try {
+    console.log(req.params.id)
     const categoryData = await Category.findOne({
       where: {
         id: req.params.id
@@ -28,18 +29,8 @@ router.get('/:id', async (req, res) => {
         'id',
         'name'
       ],
-      include: [
-        {
-          model: Product,
-          attributes: [
-            'product_id',
-            'product_name',
-            'product_price',
-            'product_stock',
-            'category_id'
-          ]
-        }
-      ]
+        include: [{model: Product }],
+      
     });
     res.json(categoryData);
   } catch (err) {
@@ -54,7 +45,7 @@ router.get('/:id', async (req, res) => {
 router.post('/', async (req, res) => {
   try {
     const categoryData = await Category.create({
-      category_name: req.body.category_name,
+      name: req.body
     });
     res.json(categoryData);
   } catch (err) {
@@ -86,15 +77,19 @@ router.put('/:id', async (req, res) => {
 
 router.delete('/:id', async (req, res) => {
   try {
+    console.log(req.params.id)
     const categoryData = await Category.destroy({
       where: {
         id: req.params.id,
       },
     });
-    res.json(categoryData);
-  } catch (err) {
-    console.log(err);
-    res.status(500).json(err);
+    if (!categoryData) {
+      res.status(404).json({ message: 'Please try Again With a Valid Id' });
+       return
+    }
+    res.status(200).json(categoryData);
+  }catch(err){
+    res.status(500).json(err); 
   }
   // delete a category by its `id` value
 });

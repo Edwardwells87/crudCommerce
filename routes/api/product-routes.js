@@ -55,7 +55,7 @@ router.post('/', (req, res) => {
         return ProductTag.bulkCreate(productTagIdArr);
       }
       // if no product tags, just respond
-      res.status(200).json(product);
+      res.status(200).json({product});
     })
     .then((productTagIds) => res.status(200).json(productTagIds))
     .catch((err) => {
@@ -112,14 +112,14 @@ router.put('/:id', (req, res) => {
 router.delete('/:id', async (req, res) => {
   try{
     const productData = await Product.destroy({
-      where: { product_id: req.params.id },
+      where: { id: req.params.id },
       returning: true,
     });
     if (!productData) {
       res.status(404).json({message: 'Try Again With A Valid Product Id'});
       return;
     }
-    res.status(200).json(productData);
+    res.status(200).json(productData + 'Product Deleted');
   }catch(err){
     res.status(500).json(err);
   }

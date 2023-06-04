@@ -3,15 +3,14 @@ const sequelize = require('../../config/connection');
 const { Tag, Product, ProductTag } = require('../../models');
 
 // The `/api/tags` endpoint
-
 router.get('/', async (req, res) => {
   try {
-    const tagData = await ProductTag.findAll({
+    const tagData = await Tag.findAll({
       attributes: ["id", "tag_name"],
       include: [
         {
           model: Product,
-          attributes: ["id", "product_name", "price", "stock", "category_id"],
+          attributes: ["id", "product_name", "product_price", "product_stock", "category_id"],
         },
       ],
     });
@@ -20,7 +19,7 @@ router.get('/', async (req, res) => {
     console.log(err);
     res.status(500).json(err);
   }
-  });
+});
 
 
    // find all tags
@@ -29,7 +28,7 @@ router.get('/', async (req, res) => {
 
   router.get('/:id', async (req, res) => {
     try {
-      const tagData = await ProductTag.findOne({
+      const tagData = await Tag.findOne({
         where: {
           id: req.params.id
         },
@@ -39,18 +38,14 @@ router.get('/', async (req, res) => {
             attributes: [
               'id',
               'product_name',
-              'price',
-              'stock',
+              'product_price',
+              'product_stock',
               'category_id'
             ]
           }
         ]
       });
-  
-      if (!tagData) {
-        res.status(404).json({ message: 'Tag not found' });
-        return;
-      }
+    
   
       res.json(tagData);
     } catch (err) {
@@ -58,13 +53,15 @@ router.get('/', async (req, res) => {
       res.status(500).json(err);
     }
   });
+  
+  
  
 
 router.post('/', (req, res) => {
   Tag.create({
     tag_name: req.body.tag_name,
   }) .then((newTag) => {
-    console.log('New tag Created:', newTag);
+    res.json({message: "New tag created", newTag})
   })
   .catch((error) => {
     console.error('Error creating tag:', error);
@@ -73,7 +70,7 @@ router.post('/', (req, res) => {
 
 router.put('/:id', async (req, res) => {
   try {
-    const tagData = await ProductTag.update(req.body, {
+    const tagData = await Tag.update(req.body, {
       where: { id: req.params.id },
       returning: true,
     });
@@ -83,7 +80,7 @@ router.put('/:id', async (req, res) => {
       return;
     }
 
-    res.status(200).json(tagData[1]);
+    res.status(200).json('Tag updated');
   } catch (err) {
     console.log(err);
     res.status(500).json(err);
@@ -91,13 +88,13 @@ router.put('/:id', async (req, res) => {
 });
 
 router.delete('/:id', (req, res) => {
-  ProductTag.destroy({
+  Tag.destroy({
     where: {
       id: req.params.id,
     },
   })
   .then((deletedTag) => {
-    res.json(deletedTag);
+    res.json({ message: `Tag with ID ${req.params.id} successfully deleted.` });
   })
   .catch((err) => {
     console.log(err);
